@@ -2,7 +2,7 @@ import Header from '../Header';
 import Footer from '../Footer';
 import { getAppCount, getApps } from '@/utils/axiosCalls';
 import AppsDirectory from './AppsDirectory';
-import { PAGE_SIZE } from './apps-config';
+import { PAGE_SIZE, slimApp } from './apps-config';
 
 export const runtime = 'edge';
 
@@ -23,7 +23,7 @@ export default async function AppsPage() {
     return (
         <>
             <Header />
-            <AppsDirectory initialApps={initialApps} appCount={appCount} />
+            <AppsDirectory initialApps={(initialApps || []).map(slimApp)} appCount={appCount} />
             <Footer />
         </>
     );

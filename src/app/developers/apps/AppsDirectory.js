@@ -7,7 +7,7 @@ import { getApps } from '@/utils/axiosCalls';
 import searchApps from '@/utils/searchApps';
 import { Label } from '../Heading';
 import { useReveal, revealClass } from '../useReveal';
-import { CATEGORIES, PAGE_SIZE } from './apps-config';
+import { CATEGORIES, PAGE_SIZE, slimApp } from './apps-config';
 
 const PAGE_URL = '/developers/apps';
 
@@ -23,17 +23,18 @@ const dedupe = (list, seen = new Set()) =>
         return true;
     });
 
-const CARD_BASE =
-    'flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-3.5 h-[104px] sm:h-[84px] lg:h-auto px-3 sm:px-5 text-center sm:text-left rounded-2xl border border-dev-line bg-dev-surface';
+// Compact icon tiles: the logo carries the tile, the name is a small caption (full name on hover).
+const TILE =
+    'flex flex-col items-center justify-center gap-1.5 h-[84px] lg:h-auto px-2 rounded-2xl border border-dev-line bg-dev-surface text-center';
 
-const GRID = 'flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-rows-4 gap-3';
+const GRID = 'flex-1 grid grid-cols-4 sm:grid-cols-6 lg:grid-rows-6 gap-2.5';
 
 function AppIcon({ app }) {
     const [failed, setFailed] = useState(false);
 
     if (!app.iconurl || failed) {
         return (
-            <span className="font-semibold text-[18px]" style={{ color: app.brandcolor || undefined }}>
+            <span className="w-full h-full grid place-items-center rounded-lg bg-dev-surface-2 font-semibold text-[16px]" style={{ color: app.brandcolor || undefined }}>
                 {app.name?.trim()?.[0]?.toUpperCase() || '?'}
             </span>
         );
@@ -41,7 +42,7 @@ function AppIcon({ app }) {
 
     return (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={app.iconurl} alt="" loading="lazy" onError={() => setFailed(true)} className="w-full h-full object-contain" />
+        <img src={app.iconurl} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} className="w-full h-full object-contain" />
     );
 }
 
@@ -49,12 +50,14 @@ function AppCard({ app }) {
     return (
         <Link
             href={app.appslugname ? `/integrations/${app.appslugname}` : '/integrations'}
-            className={`${CARD_BASE} no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]`}
+            title={app.name}
+            aria-label={app.name}
+            className={`${TILE} no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]`}
         >
-            <span className="w-10 h-10 sm:w-11 sm:h-11 p-2 rounded-xl bg-white border border-dev-line grid place-items-center shrink-0 overflow-hidden">
+            <span className="w-8 h-8 sm:w-9 sm:h-9 shrink-0">
                 <AppIcon app={app} />
             </span>
-            <b className="text-[14px] sm:text-[16.5px] font-semibold tracking-[-0.01em] leading-tight min-w-0 break-words line-clamp-2">{app.name}</b>
+            <span className="block w-full truncate text-[11.5px] leading-none text-dev-ink-2">{app.name}</span>
         </Link>
     );
 }
@@ -63,9 +66,9 @@ function SkeletonGrid() {
     return (
         <div className={GRID} aria-hidden="true">
             {Array.from({ length: PAGE_SIZE }, (_, i) => (
-                <div key={i} className={`${CARD_BASE} animate-pulse`}>
-                    <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-dev-surface-2 shrink-0" />
-                    <span className="h-3.5 w-20 sm:w-24 rounded bg-dev-surface-2" />
+                <div key={i} className={`${TILE} animate-pulse`}>
+                    <span className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-dev-surface-2 shrink-0" />
+                    <span className="h-2.5 w-14 rounded bg-dev-surface-2" />
                 </div>
             ))}
         </div>
@@ -108,9 +111,9 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
     async function getRaw(cat, p) {
         const k = `${cat}|${p}`;
         if (cache.current.has(k)) return cache.current.get(k);
-        const list = await fetchPage(cat, p);
-        if (Array.isArray(list) && list.length) cache.current.set(k, list);
-        return Array.isArray(list) ? list : [];
+        const list = (await fetchPage(cat, p))?.map(slimApp) ?? [];
+        if (list.length) cache.current.set(k, list);
+        return list;
     }
 
     useEffect(() => {
@@ -126,7 +129,7 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
             if (searching) {
                 const list = await searchApps(debounced);
                 if (id !== requestId.current) return;
-                setLoaded({ key, scope, apps: Array.isArray(list) ? dedupe(list) : [], hasNext: false, error: !Array.isArray(list) });
+                setLoaded({ key, scope, apps: Array.isArray(list) ? dedupe(list.map(slimApp)) : [], hasNext: false, error: !Array.isArray(list) });
                 return;
             }
 
@@ -255,7 +258,7 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
                             <span className="font-dev-mono text-[11.5px] tracking-[0.1em] uppercase text-dev-ink-3">{countLabel}</span>
                         </div>
 
-                        <div ref={gridRef} className="scroll-mt-24 flex flex-col flex-1 sm:min-h-[372px]" aria-busy={isLoading}>
+                        <div ref={gridRef} className="scroll-mt-24 flex flex-col flex-1 sm:min-h-[554px] lg:min-h-0" aria-busy={isLoading}>
                             {isLoading && !changingPage && <SkeletonGrid />}
 
                             {!error && items.length > 0 && (isLoading ? changingPage : true) && (
