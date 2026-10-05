@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { getApps } from '@/utils/axiosCalls';
 import searchApps from '@/utils/searchApps';
 import { Label } from '../Heading';
@@ -10,6 +10,23 @@ import { useReveal, revealClass } from '../useReveal';
 import { CATEGORIES, PAGE_SIZE } from './apps-config';
 
 const PAGE_URL = '/developers/apps';
+
+// The limit must stay constant: the API orders results differently for different
+// limits, so a varying limit makes neighbouring pages overlap.
+const fetchPage = (category, page) =>
+    getApps({ categoryData: [{ name: category }], limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }, PAGE_URL);
+
+const dedupe = (list, seen = new Set()) =>
+    list.filter((a) => {
+        if (seen.has(a.rowid)) return false;
+        seen.add(a.rowid);
+        return true;
+    });
+
+const CARD_BASE =
+    'flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-2 sm:gap-3.5 h-[104px] sm:h-[84px] lg:h-auto px-3 sm:px-5 text-center sm:text-left rounded-2xl border border-dev-line bg-dev-surface';
+
+const GRID = 'flex-1 grid grid-cols-2 sm:grid-cols-3 lg:grid-rows-4 gap-3';
 
 function AppIcon({ app }) {
     const [failed, setFailed] = useState(false);
@@ -32,45 +49,69 @@ function AppCard({ app }) {
     return (
         <Link
             href={app.appslugname ? `/integrations/${app.appslugname}` : '/integrations'}
-            className="flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl border border-dev-line bg-dev-surface no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]"
+            className={`${CARD_BASE} no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]`}
         >
-            <span className="w-11 h-11 p-2 rounded-xl bg-white border border-dev-line grid place-items-center shrink-0 overflow-hidden">
+            <span className="w-10 h-10 sm:w-11 sm:h-11 p-2 rounded-xl bg-white border border-dev-line grid place-items-center shrink-0 overflow-hidden">
                 <AppIcon app={app} />
             </span>
-            <b className="text-[16.5px] font-semibold tracking-[-0.01em] min-w-0 break-words">{app.name}</b>
+            <b className="text-[14px] sm:text-[16.5px] font-semibold tracking-[-0.01em] leading-tight min-w-0 break-words line-clamp-2">{app.name}</b>
         </Link>
     );
 }
 
 function SkeletonGrid() {
     return (
-        <div className="grid grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 gap-3" aria-hidden="true">
-            {Array.from({ length: 12 }, (_, i) => (
-                <div key={i} className="flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl border border-dev-line bg-dev-surface animate-pulse">
-                    <span className="w-11 h-11 rounded-xl bg-dev-surface-2 shrink-0" />
-                    <span className="h-4 w-24 rounded bg-dev-surface-2" />
+        <div className={GRID} aria-hidden="true">
+            {Array.from({ length: PAGE_SIZE }, (_, i) => (
+                <div key={i} className={`${CARD_BASE} animate-pulse`}>
+                    <span className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-dev-surface-2 shrink-0" />
+                    <span className="h-3.5 w-20 sm:w-24 rounded bg-dev-surface-2" />
                 </div>
             ))}
         </div>
     );
 }
 
+const PAGER_BTN =
+    'inline-flex items-center gap-1.5 rounded-full font-semibold text-[14px] px-[18px] py-[10px] cursor-pointer transition-transform hover:-translate-y-px disabled:opacity-40 disabled:cursor-default disabled:hover:translate-y-0';
+
 export default function AppsDirectory({ initialApps = [], appCount }) {
     const [query, setQuery] = useState('');
     const [debounced, setDebounced] = useState('');
     const [category, setCategory] = useState('All');
-    const [apps, setApps] = useState(initialApps);
-    const [loadedKey, setLoadedKey] = useState(initialApps.length ? 'All|' : null);
-    const [hasMore, setHasMore] = useState(initialApps.length >= PAGE_SIZE);
-    const [loadingMore, setLoadingMore] = useState(false);
-    const [error, setError] = useState(false);
+    // The page number only counts for the list it was set on, so switching
+    // category or search lands back on page 1 with no reset effect.
+    const [paging, setPaging] = useState({ scope: 'b|All', page: 1 });
+    const [loaded, setLoaded] = useState(() =>
+        initialApps.length
+            ? { key: 'b|All|1', scope: 'b|All', apps: dedupe(initialApps), hasNext: initialApps.length >= PAGE_SIZE, error: false }
+            : null,
+    );
     const [ref, visible] = useReveal();
+    const gridRef = useRef(null);
     const requestId = useRef(0);
+    // Raw API pages by "category|page", so Previous/Next are instant and every
+    // page can be de-duplicated against the ones before it.
+    const cache = useRef(null);
+    if (!cache.current) cache.current = new Map(initialApps.length ? [['All|1', initialApps]] : []);
 
     // Same formula the viaSocket homepage and integrations page use for the headline count.
     const total = appCount ? appCount + 300 : null;
-    const key = `${category}|${debounced}`;
-    const isLoading = loadedKey !== key;
+    const searching = Boolean(debounced);
+    const scope = searching ? `s|${debounced}` : `b|${category}`;
+    const page = paging.scope === scope ? paging.page : 1;
+    // Search loads every match once and pages locally, so its key ignores the page.
+    const key = searching ? scope : `${scope}|${page}`;
+    const isLoading = loaded?.key !== key;
+    const changingPage = isLoading && loaded?.scope === scope;
+
+    async function getRaw(cat, p) {
+        const k = `${cat}|${p}`;
+        if (cache.current.has(k)) return cache.current.get(k);
+        const list = await fetchPage(cat, p);
+        if (Array.isArray(list) && list.length) cache.current.set(k, list);
+        return Array.isArray(list) ? list : [];
+    }
 
     useEffect(() => {
         const t = setTimeout(() => setDebounced(query.trim()), 300);
@@ -78,62 +119,88 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
     }, [query]);
 
     useEffect(() => {
-        if (loadedKey === key) return;
+        if (loaded?.key === key) return;
         const id = ++requestId.current;
-        setError(false);
-        setLoadingMore(false);
 
         (async () => {
-            const list = debounced
-                ? await searchApps(debounced)
-                : await getApps({ categoryData: [{ name: category }], limit: PAGE_SIZE, offset: 0 }, PAGE_URL);
+            if (searching) {
+                const list = await searchApps(debounced);
+                if (id !== requestId.current) return;
+                setLoaded({ key, scope, apps: Array.isArray(list) ? dedupe(list) : [], hasNext: false, error: !Array.isArray(list) });
+                return;
+            }
+
+            const raw = await getRaw(category, page);
             if (id !== requestId.current) return;
 
-            // searchApps returns undefined on failure; a category with no apps back means the request failed.
-            const failed = !Array.isArray(list) || (!debounced && list.length === 0);
-            setApps(failed ? [] : list);
-            setHasMore(!failed && !debounced && list.length >= PAGE_SIZE);
-            setError(failed);
-            setLoadedKey(key);
-        })();
-    }, [key, loadedKey, category, debounced]);
+            // Past the last page (the list ended on an exact multiple of the page size): step back.
+            if (!raw.length && page > 1) {
+                setPaging({ scope, page: page - 1 });
+                return;
+            }
 
-    async function loadMore() {
-        const id = requestId.current;
-        setLoadingMore(true);
-        const list = await getApps({ categoryData: [{ name: category }], limit: PAGE_SIZE, offset: apps.length }, PAGE_URL);
-        if (id !== requestId.current) return;
-        setApps((prev) => {
-            const seen = new Set(prev.map((a) => a.rowid));
-            return prev.concat((list || []).filter((a) => !seen.has(a.rowid)));
+            // getApps swallows failures into []; page 1 of a category is never legitimately empty.
+            if (!raw.length) {
+                setLoaded({ key, scope, apps: [], hasNext: false, error: true });
+                return;
+            }
+
+            const seen = new Set();
+            for (let i = 1; i < page; i += 1) (cache.current.get(`${category}|${i}`) || []).forEach((a) => seen.add(a.rowid));
+            setLoaded({ key, scope, apps: dedupe(raw, seen), hasNext: raw.length >= PAGE_SIZE, error: false });
+        })();
+    }, [key, loaded, searching, debounced, category, page, scope]);
+
+    // Fetch the next page ahead of time: Next becomes instant, and a full page
+    // followed by nothing (the true last page) turns Next off.
+    useEffect(() => {
+        if (searching || loaded?.key !== key || !loaded.hasNext) return;
+        let cancelled = false;
+        getRaw(category, page + 1).then((next) => {
+            if (cancelled || next.length) return;
+            setLoaded((l) => (l && l.key === key ? { ...l, hasNext: false } : l));
         });
-        setHasMore(Array.isArray(list) && list.length >= PAGE_SIZE);
-        setLoadingMore(false);
+        return () => {
+            cancelled = true;
+        };
+    }, [loaded, key, searching, category, page]);
+
+    const all = loaded?.apps || [];
+    const items = searching ? all.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE) : all;
+    const hasNext = searching ? all.length > page * PAGE_SIZE : Boolean(loaded?.hasNext);
+    const error = !isLoading && Boolean(loaded?.error);
+    const start = (page - 1) * PAGE_SIZE + 1;
+    const end = start + items.length - 1;
+
+    let countLabel = '';
+    if (!isLoading && !error && items.length) {
+        countLabel = searching
+            ? `${all.length} result${all.length === 1 ? '' : 's'} for “${debounced}”${all.length > PAGE_SIZE ? ` · showing ${start}–${end}` : ''}`
+            : `${category === 'All' ? 'All apps' : category} · showing ${start}–${end}`;
+    }
+
+    function goTo(n) {
+        setPaging({ scope, page: n });
+        const el = gridRef.current;
+        if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 
     function selectCategory(cat) {
         setQuery('');
         setDebounced('');
         setCategory(cat);
+        setPaging({ scope: `b|${cat}`, page: 1 });
     }
 
     function onQueryChange(e) {
-        setQuery(e.target.value);
-        if (category !== 'All') setCategory('All');
+        const v = e.target.value;
+        setQuery(v);
+        if (!v.trim()) setDebounced('');
     }
 
     function retry() {
-        setLoadedKey(null);
+        setLoaded(null);
     }
-
-    const searching = Boolean(debounced);
-    const countLabel = isLoading
-        ? ''
-        : error
-          ? ''
-          : searching
-            ? `${apps.length} result${apps.length === 1 ? '' : 's'} for “${debounced}”`
-            : `Showing ${apps.length}${hasMore ? '+' : ''} ${category === 'All' ? 'apps' : `${category} apps`}`;
 
     return (
         <>
@@ -162,8 +229,9 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
             </section>
 
             <section ref={ref} className={`max-w-[1080px] mx-auto px-[clamp(20px,5vw,64px)] pb-[clamp(56px,8vw,112px)] ${revealClass(visible)}`}>
-                <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-[clamp(24px,4vw,48px)] items-start">
-                    <aside className="lg:sticky lg:top-[84px] grid gap-3.5">
+                {/* Both columns stretch to one height: the grid fills the space and the pager lands level with the last category. */}
+                <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-[clamp(24px,4vw,48px)]">
+                    <aside className="grid gap-3.5 content-start">
                         <Label>Categories</Label>
                         <div className="flex flex-wrap gap-2 lg:flex-col lg:gap-0.5">
                             {CATEGORIES.map((cat) => (
@@ -182,47 +250,60 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
                         </div>
                     </aside>
 
-                    <div className="grid gap-4" aria-live="polite">
+                    <div className="flex flex-col gap-4" aria-live="polite">
                         <div className="min-h-[18px]">
                             <span className="font-dev-mono text-[11.5px] tracking-[0.1em] uppercase text-dev-ink-3">{countLabel}</span>
                         </div>
 
-                        {isLoading && <SkeletonGrid />}
+                        <div ref={gridRef} className="scroll-mt-24 flex flex-col flex-1 sm:min-h-[372px]" aria-busy={isLoading}>
+                            {isLoading && !changingPage && <SkeletonGrid />}
 
-                        {!isLoading && !error && apps.length > 0 && (
-                            <div className="grid grid-cols-1 min-[480px]:grid-cols-2 sm:grid-cols-3 gap-3">
-                                {apps.map((app) => (
-                                    <AppCard key={app.rowid || app.appslugname} app={app} />
-                                ))}
-                            </div>
-                        )}
+                            {!error && items.length > 0 && (isLoading ? changingPage : true) && (
+                                <div className={`${GRID} transition-opacity ${changingPage ? 'opacity-50' : ''}`}>
+                                    {items.map((app) => (
+                                        <AppCard key={app.rowid || app.appslugname} app={app} />
+                                    ))}
+                                </div>
+                            )}
 
-                        {!isLoading && !error && apps.length === 0 && (
-                            <p className="text-dev-ink-3 text-[15px]">
-                                No apps match that search. viaSocket supports {total ? `${total.toLocaleString('en-US')}+` : '2,300+'} apps, so it is very likely covered.{' '}
-                                <Link href="/developers#start" className="text-dev-accent font-medium">Ask us</Link>.
-                            </p>
-                        )}
+                            {!isLoading && !error && items.length === 0 && (
+                                <p className="text-dev-ink-3 text-[15px]">
+                                    No apps match that search. viaSocket supports {total ? `${total.toLocaleString('en-US')}+` : '2,300+'} apps, so it is very likely covered.{' '}
+                                    <Link href="/developers#start" className="text-dev-accent font-medium">Ask us</Link>.
+                                </p>
+                            )}
 
-                        {!isLoading && error && (
-                            <p className="text-dev-ink-3 text-[15px]">
-                                Couldn&apos;t load apps right now.{' '}
-                                <button type="button" onClick={retry} className="text-dev-accent font-medium bg-transparent border-0 p-0 cursor-pointer underline">
-                                    Try again
+                            {error && (
+                                <p className="text-dev-ink-3 text-[15px]">
+                                    Couldn&apos;t load apps right now.{' '}
+                                    <button type="button" onClick={retry} className="text-dev-accent font-medium bg-transparent border-0 p-0 cursor-pointer underline">
+                                        Try again
+                                    </button>
+                                    .
+                                </p>
+                            )}
+                        </div>
+
+                        {!error && (!isLoading || changingPage) && (page > 1 || hasNext) && (
+                            <nav aria-label="Pagination" className="flex items-center justify-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => goTo(page - 1)}
+                                    disabled={page <= 1 || isLoading}
+                                    className={`${PAGER_BTN} bg-transparent text-dev-ink border border-dev-line-2`}
+                                >
+                                    <ChevronLeft size={16} /> Previous
                                 </button>
-                                .
-                            </p>
-                        )}
-
-                        {!isLoading && !error && hasMore && (
-                            <button
-                                type="button"
-                                onClick={loadMore}
-                                disabled={loadingMore}
-                                className="justify-self-center mt-2 inline-flex items-center rounded-full border border-dev-line-2 bg-transparent text-dev-ink font-semibold text-[15px] px-[22px] py-[12px] cursor-pointer transition-transform hover:-translate-y-px disabled:opacity-60 disabled:cursor-default"
-                            >
-                                {loadingMore ? 'Loading…' : 'Load more apps'}
-                            </button>
+                                <span className="font-dev-mono text-[12px] tracking-[0.08em] uppercase text-dev-ink-3 min-w-[72px] text-center">Page {page}</span>
+                                <button
+                                    type="button"
+                                    onClick={() => goTo(page + 1)}
+                                    disabled={!hasNext || isLoading}
+                                    className={`${PAGER_BTN} bg-dev-ink text-dev-ink-inv border-0`}
+                                >
+                                    Next <ChevronRight size={16} />
+                                </button>
+                            </nav>
                         )}
                     </div>
                 </div>
