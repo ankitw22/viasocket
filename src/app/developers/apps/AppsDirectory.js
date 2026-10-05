@@ -81,7 +81,7 @@ function SkeletonGrid() {
 }
 
 const PAGER_BTN =
-    'inline-flex items-center gap-1.5 rounded-full font-semibold text-[14.5px] px-[22px] py-[12px] cursor-pointer transition-all hover:-translate-y-px disabled:opacity-60 disabled:cursor-default disabled:hover:translate-y-0';
+    'inline-flex items-center gap-1.5 rounded-full font-semibold text-[14.5px] px-[22px] py-[12px] cursor-pointer transition-[transform,background-color,opacity] hover:-translate-y-px disabled:opacity-60 disabled:cursor-default disabled:hover:translate-y-0';
 
 export default function AppsDirectory({ initialApps = [], appCount }) {
     const [query, setQuery] = useState('');
@@ -293,32 +293,28 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
                         </div>
 
                         {!error && (!isLoading || changingPage) && (page > 1 || hasNext) && (
-                            <nav aria-label="Pagination" className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
-                                <div className="justify-self-end">
-                                    {page > 1 && (
-                                        <button
-                                            type="button"
-                                            onClick={() => goTo(page - 1)}
-                                            disabled={isLoading}
-                                            className={`${PAGER_BTN} bg-dev-surface text-dev-ink border border-dev-line-2 hover:bg-dev-surface-2`}
-                                        >
-                                            <ChevronLeft size={16} /> Previous
-                                        </button>
-                                    )}
-                                </div>
-                                {hasNext ? (
+                            <nav aria-label="Pagination" className="flex items-center justify-end gap-3">
+                                {page > 1 && (
                                     <button
                                         type="button"
-                                        onClick={() => goTo(page + 1)}
+                                        onClick={() => goTo(page - 1)}
                                         disabled={isLoading}
-                                        className={`${PAGER_BTN} bg-dev-ink text-dev-ink-inv border-0`}
+                                        className={`${PAGER_BTN} bg-dev-surface text-dev-ink border border-dev-line-2 hover:bg-dev-surface-2`}
                                     >
-                                        Next <ChevronRight size={16} />
+                                        <ChevronLeft size={16} /> Previous
                                     </button>
-                                ) : (
-                                    <span />
                                 )}
-                                <span />
+                                {/* Kept in place (just hidden) on the last page so Previous never slides across. */}
+                                <button
+                                    type="button"
+                                    onClick={() => goTo(page + 1)}
+                                    disabled={isLoading || !hasNext}
+                                    aria-hidden={!hasNext}
+                                    tabIndex={hasNext ? 0 : -1}
+                                    className={`${PAGER_BTN} bg-dev-ink text-dev-ink-inv border-0 ${hasNext ? '' : 'invisible'}`}
+                                >
+                                    Next <ChevronRight size={16} />
+                                </button>
                             </nav>
                         )}
                     </div>
