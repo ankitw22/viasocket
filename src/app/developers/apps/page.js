@@ -1,6 +1,8 @@
 import Header from '../Header';
 import Footer from '../Footer';
+import { getAppCount, getApps } from '@/utils/axiosCalls';
 import AppsDirectory from './AppsDirectory';
+import { PAGE_SIZE } from './apps-config';
 
 export const runtime = 'edge';
 
@@ -11,11 +13,17 @@ export async function generateMetadata() {
     };
 }
 
-export default function AppsPage() {
+export default async function AppsPage() {
+    const pageUrl = '/developers/apps';
+    const [appCount, initialApps] = await Promise.all([
+        getAppCount(pageUrl),
+        getApps({ limit: PAGE_SIZE, offset: 0 }, pageUrl),
+    ]);
+
     return (
         <>
             <Header />
-            <AppsDirectory />
+            <AppsDirectory initialApps={initialApps} appCount={appCount} />
             <Footer />
         </>
     );
