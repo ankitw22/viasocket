@@ -50,14 +50,19 @@ function AppCard({ app }) {
     return (
         <Link
             href={app.appslugname ? `/integrations/${app.appslugname}` : '/integrations'}
-            title={app.name}
             aria-label={app.name}
-            className={`${TILE} no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]`}
+            className={`${TILE} group relative hover:z-10 focus-visible:z-10 no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]`}
         >
             <span className="w-8 h-8 sm:w-9 sm:h-9 shrink-0">
                 <AppIcon app={app} />
             </span>
             <span className="block w-full truncate text-[11.5px] leading-none text-dev-ink-2">{app.name}</span>
+            <span
+                aria-hidden="true"
+                className="pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 whitespace-nowrap rounded-lg bg-dev-ink text-dev-ink-inv text-[12px] font-medium leading-none px-2.5 py-[7px] opacity-0 transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100"
+            >
+                {app.name}
+            </span>
         </Link>
     );
 }
@@ -76,7 +81,7 @@ function SkeletonGrid() {
 }
 
 const PAGER_BTN =
-    'inline-flex items-center gap-1.5 rounded-full font-semibold text-[14px] px-[18px] py-[10px] cursor-pointer transition-transform hover:-translate-y-px disabled:opacity-40 disabled:cursor-default disabled:hover:translate-y-0';
+    'inline-flex items-center gap-1.5 rounded-full font-semibold text-[14.5px] px-[22px] py-[12px] cursor-pointer transition-all hover:-translate-y-px disabled:opacity-60 disabled:cursor-default disabled:hover:translate-y-0';
 
 export default function AppsDirectory({ initialApps = [], appCount }) {
     const [query, setQuery] = useState('');
@@ -253,10 +258,10 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
                         </div>
                     </aside>
 
-                    <div className="flex flex-col gap-4" aria-live="polite">
-                        <div className="min-h-[18px]">
-                            <span className="font-dev-mono text-[11.5px] tracking-[0.1em] uppercase text-dev-ink-3">{countLabel}</span>
-                        </div>
+                    <div className="flex flex-col gap-4">
+                        <p className="sr-only" role="status">{countLabel}</p>
+                        {/* Spacer so the grid starts level with the first category, now that the count line is gone. */}
+                        <div className="hidden lg:block h-[7px]" aria-hidden="true" />
 
                         <div ref={gridRef} className="scroll-mt-24 flex flex-col flex-1 sm:min-h-[554px] lg:min-h-0" aria-busy={isLoading}>
                             {isLoading && !changingPage && <SkeletonGrid />}
@@ -288,24 +293,32 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
                         </div>
 
                         {!error && (!isLoading || changingPage) && (page > 1 || hasNext) && (
-                            <nav aria-label="Pagination" className="flex items-center justify-center gap-3">
-                                <button
-                                    type="button"
-                                    onClick={() => goTo(page - 1)}
-                                    disabled={page <= 1 || isLoading}
-                                    className={`${PAGER_BTN} bg-transparent text-dev-ink border border-dev-line-2`}
-                                >
-                                    <ChevronLeft size={16} /> Previous
-                                </button>
-                                <span className="font-dev-mono text-[12px] tracking-[0.08em] uppercase text-dev-ink-3 min-w-[72px] text-center">Page {page}</span>
-                                <button
-                                    type="button"
-                                    onClick={() => goTo(page + 1)}
-                                    disabled={!hasNext || isLoading}
-                                    className={`${PAGER_BTN} bg-dev-ink text-dev-ink-inv border-0`}
-                                >
-                                    Next <ChevronRight size={16} />
-                                </button>
+                            <nav aria-label="Pagination" className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+                                <div className="justify-self-end">
+                                    {page > 1 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => goTo(page - 1)}
+                                            disabled={isLoading}
+                                            className={`${PAGER_BTN} bg-dev-surface text-dev-ink border border-dev-line-2 hover:bg-dev-surface-2`}
+                                        >
+                                            <ChevronLeft size={16} /> Previous
+                                        </button>
+                                    )}
+                                </div>
+                                {hasNext ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => goTo(page + 1)}
+                                        disabled={isLoading}
+                                        className={`${PAGER_BTN} bg-dev-ink text-dev-ink-inv border-0`}
+                                    >
+                                        Next <ChevronRight size={16} />
+                                    </button>
+                                ) : (
+                                    <span />
+                                )}
+                                <span />
                             </nav>
                         )}
                     </div>
