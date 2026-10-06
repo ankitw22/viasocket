@@ -64,11 +64,9 @@
     padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 64px) clamp(24px, 3vw, 40px);
     max-width: 1080px;
     margin: 0 auto;
-    text-align: center;
     display: grid;
     gap: clamp(20px, 3vw, 36px);
-    align-items: center;
-    justify-items: center;
+    align-items: flex-start;
 }
 
 .heroGrid {
@@ -111,7 +109,7 @@
     align-items: center;
     font-size: 14px;
     color: var(--ink-3);
-    justify-content: center;
+    justify-content: flex-start;
 }
 
 .breadcrumb a {
@@ -133,7 +131,7 @@
     place-items: center;
     box-shadow: var(--shadow);
     overflow: hidden;
-    margin: 0 auto;
+    margin: 0;
 }
 
 .heroIcon img {
@@ -152,8 +150,9 @@
     font-size: clamp(17px, 1.5vw, 20px);
     line-height: 1.5;
     color: var(--ink-2);
-    max-width: 46ch;
-    margin: 0 auto;
+    max-width: 100%;
+    margin: 0;
+    text-align: left;
 }
 
 .label {
@@ -168,7 +167,7 @@
     display: flex;
     gap: 14px;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     flex-wrap: wrap;
 }
 
