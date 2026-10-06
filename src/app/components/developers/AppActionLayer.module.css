@@ -1,4 +1,4 @@
-:root {
+.container {
     --bg: #f7f7f8;
     --surface: #ffffff;
     --surface-2: #eff0f2;
@@ -15,10 +15,16 @@
     --shadow: 0 1px 1px rgba(11, 13, 16, 0.04), 0 24px 60px -30px rgba(11, 13, 16, 0.25);
     --sans: "Albert Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
     --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
 }
 
 @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
+    .container {
         --bg: #0b0d10;
         --surface: #12151a;
         --surface-2: #191d23;
@@ -34,19 +40,6 @@
         --ok-soft: #10301f;
         --shadow: 0 1px 1px rgba(0, 0, 0, 0.4), 0 24px 60px -30px rgba(0, 0, 0, 0.8);
     }
-}
-
-* {
-    box-sizing: border-box;
-}
-
-.container {
-    background: var(--bg);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 17px;
-    line-height: 1.55;
-    -webkit-font-smoothing: antialiased;
 }
 
 .header {
@@ -232,6 +225,7 @@
     align-items: center;
     gap: 10px;
     transition: transform 0.2s ease;
+    box-sizing: border-box;
 }
 
 .btnPrimary {
@@ -272,6 +266,7 @@
     border-radius: 14px;
     background: var(--surface);
     align-content: start;
+    box-sizing: border-box;
 }
 
 .actionCard b {
@@ -303,6 +298,7 @@
     padding: 8px 14px;
     font-size: 14px;
     font-weight: 500;
+    box-sizing: border-box;
 }
 
 .trigger i {
@@ -334,6 +330,7 @@
     font-weight: 600;
     font-size: 15px;
     white-space: nowrap;
+    box-sizing: border-box;
 }
 
 .flowStepHub {
@@ -385,6 +382,7 @@
     border-radius: 16px;
     border: 1px solid var(--line);
     background: var(--surface);
+    box-sizing: border-box;
 }
 
 .stepNum {
@@ -537,9 +535,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
+    .btnPrimary,
+    .btnSecondary,
+    .nav a,
+    .faq summary i,
+    .faq summary i::after {
         animation: none !important;
         transition: none !important;
     }
