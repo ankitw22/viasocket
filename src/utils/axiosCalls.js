@@ -217,6 +217,7 @@ export async function getApps(query, pageUrl) {
     const fetchUrl = `${process.env.NEXT_PUBLIC_INTEGRATION_URL}api/v1/plugins/all`;
     const params = {
         category: (category !== 'All' && category) || '',
+        preferred_auth_type: 'Auth2.0', // OAuth 2.0 apps only
         limit: query?.limit || APPERPAGE,
         // Callers that page by route pass `page` and step by APPERPAGE; callers
         // that load in their own batch size pass `offset` directly.
