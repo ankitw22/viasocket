@@ -56,30 +56,66 @@ export default function AppActionLayer({ data, appname }) {
 
             {/* Hero Section */}
             <section className={styles.hero}>
-                <div className={styles.heroContent}>
-                    <nav className={styles.breadcrumb}>
-                        <a href="/developers/apps">Action layer</a>
-                        <span>/</span>
-                        <span>{app.name}</span>
-                    </nav>
+                <div className={styles.heroGrid}>
+                    <div className={styles.heroContent}>
+                        <nav className={styles.breadcrumb}>
+                            <a href="/developers/apps">Action layer</a>
+                            <span>/</span>
+                            <span>{app.name}</span>
+                        </nav>
 
-                    <div className={styles.heroIcon} style={{ '--c': brandColor }}>
-                        {heroIcon ? (
-                            <img src={heroIcon} alt={app.name} />
-                        ) : (
-                            <span>{app.name?.charAt(0)}</span>
-                        )}
+                        <div className={styles.heroIcon} style={{ '--c': brandColor }}>
+                            {heroIcon ? (
+                                <img src={heroIcon} alt={app.name} />
+                            ) : (
+                                <span>{app.name?.charAt(0)}</span>
+                            )}
+                        </div>
+
+                        <h1>Add {app.name} actions to your AI product</h1>
+                        <p className={styles.lead}>
+                            Give your AI agent the ability to act in {app.name}. Your users connect their own {app.name} account inside your product, and your AI can perform {actions.length || 6} key actions. Authentication, mapping and monitoring are handled by viaSocket.
+                        </p>
+
+                        <div className={styles.ctaGroup}>
+                            <button className={styles.btnPrimary}>Copy prompt</button>
+                            <a href="/#start" className={styles.btnSecondary}>Read docs</a>
+                            <span className={styles.ctaNote}>Live in under 15 minutes</span>
+                        </div>
                     </div>
 
-                    <h1>Add {app.name} actions to your AI product</h1>
-                    <p className={styles.lead}>
-                        Give your AI agent the ability to act in {app.name}. Your users connect their own {app.name} account inside your product, and your AI can perform {actions.length || 6} key actions. Authentication, mapping and monitoring are handled by viaSocket.
-                    </p>
-
-                    <div className={styles.ctaGroup}>
-                        <button className={styles.btnPrimary}>Copy prompt</button>
-                        <a href="/#start" className={styles.btnSecondary}>Read docs</a>
-                        <span className={styles.ctaNote}>Live in under 15 minutes</span>
+                    {/* Demo Section */}
+                    <div className={styles.demoBox}>
+                        <div className={styles.demoWindow}>
+                            <div className={styles.demoChrome}>
+                                <span className={styles.dots}><i></i><i></i><i></i></span>
+                                <span className={styles.url}>app.yourproduct.com/integrations</span>
+                            </div>
+                            <div className={styles.demoRun}>
+                                <div className={styles.runBar}>
+                                    <span>{app.name} · connected</span>
+                                    <span>verified</span>
+                                </div>
+                                <div className={styles.runMsg}>
+                                    <span className={styles.who}>AI</span>
+                                    <span>Create {app.name.toLowerCase()} record.</span>
+                                </div>
+                                <ol className={styles.runSeq}>
+                                    <li>
+                                        <span className={styles.seqLabel}>CONNECTION</span>
+                                        <span className={styles.seqValue}>{app.name} · Acme</span>
+                                    </li>
+                                    <li>
+                                        <span className={styles.seqLabel}>EXECUTE</span>
+                                        <span className={styles.seqValue}>{app.appslugname}.create_record</span>
+                                    </li>
+                                    <li>
+                                        <span className={styles.seqLabel}>RESULT</span>
+                                        <span className={`${styles.seqValue} ${styles.seqOk}`}>Done · verified in {app.name}</span>
+                                    </li>
+                                </ol>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
