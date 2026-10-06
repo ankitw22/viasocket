@@ -14,7 +14,7 @@ const PAGE_URL = '/developers/apps';
 // The limit must stay constant: the API orders results differently for different
 // limits, so a varying limit makes neighbouring pages overlap.
 const fetchPage = (category, page) =>
-    getApps({ categoryData: [{ name: category }], limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE }, PAGE_URL);
+    getApps({ categoryData: [{ name: category }], limit: PAGE_SIZE, offset: (page - 1) * PAGE_SIZE, authType: 'Auth2.0' }, PAGE_URL);
 
 const dedupe = (list, seen = new Set()) =>
     list.filter((a) => {
