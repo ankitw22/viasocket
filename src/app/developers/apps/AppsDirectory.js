@@ -134,7 +134,9 @@ export default function AppsDirectory({ initialApps = [], appCount }) {
             if (searching) {
                 const list = await searchApps(debounced);
                 if (id !== requestId.current) return;
-                setLoaded({ key, scope, apps: Array.isArray(list) ? dedupe(list.map(slimApp)) : [], hasNext: false, error: !Array.isArray(list) });
+                // Filter search results to OAuth 2.0 only
+                const auth2Only = Array.isArray(list) ? list.filter(a => a.preferedauthtype === 'Auth2.0') : [];
+                setLoaded({ key, scope, apps: dedupe(auth2Only.map(slimApp)), hasNext: false, error: !Array.isArray(list) });
                 return;
             }
 
