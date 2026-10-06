@@ -1,0 +1,546 @@
+:root {
+    --bg: #f7f7f8;
+    --surface: #ffffff;
+    --surface-2: #eff0f2;
+    --ink: #0b0d10;
+    --ink-2: #4f555d;
+    --ink-3: #8a9098;
+    --ink-inv: #f7f7f8;
+    --line: #e2e4e8;
+    --line-2: #c9cdd3;
+    --accent: var(--brand-color, #2b5bff);
+    --accent-soft: #e9eeff;
+    --ok: #12805a;
+    --ok-soft: #e1f3ea;
+    --shadow: 0 1px 1px rgba(11, 13, 16, 0.04), 0 24px 60px -30px rgba(11, 13, 16, 0.25);
+    --sans: "Albert Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #0b0d10;
+        --surface: #12151a;
+        --surface-2: #191d23;
+        --ink: #eef0f3;
+        --ink-2: #aeb4bc;
+        --ink-3: #6f767f;
+        --ink-inv: #0b0d10;
+        --line: #242930;
+        --line-2: #333a43;
+        --accent: var(--brand-color, #7d9bff);
+        --accent-soft: #182140;
+        --ok: #5dd39c;
+        --ok-soft: #10301f;
+        --shadow: 0 1px 1px rgba(0, 0, 0, 0.4), 0 24px 60px -30px rgba(0, 0, 0, 0.8);
+    }
+}
+
+* {
+    box-sizing: border-box;
+}
+
+.container {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+.header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 84%, transparent);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+}
+
+.headerContent {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 18px clamp(20px, 5vw, 64px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.logo {
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logoDot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+}
+
+.nav {
+    display: flex;
+    align-items: center;
+    gap: 22px;
+}
+
+.nav a {
+    text-decoration: none;
+    color: var(--ink-2);
+    font-size: 14.5px;
+    transition: color 0.2s;
+}
+
+.nav a:hover {
+    color: var(--ink);
+}
+
+@media (max-width: 640px) {
+    .nav a:not(.btnPrimary) {
+        display: none;
+    }
+}
+
+.section {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: clamp(56px, 8vw, 112px) clamp(20px, 5vw, 64px);
+    display: grid;
+    gap: clamp(20px, 3vw, 36px);
+}
+
+.section h2 {
+    font-weight: 600;
+    font-size: clamp(32px, 4.8vw, 64px);
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    margin: 0;
+    max-width: 16ch;
+}
+
+.hero {
+    padding: clamp(40px, 6vw, 72px) clamp(20px, 5vw, 64px) clamp(24px, 3vw, 40px);
+    max-width: 1080px;
+    margin: 0 auto;
+    text-align: center;
+    display: grid;
+    gap: clamp(20px, 3vw, 36px);
+    align-items: center;
+    justify-items: center;
+}
+
+.heroContent {
+    display: grid;
+    gap: 20px;
+    max-width: 760px;
+}
+
+.hero h1 {
+    font-weight: 600;
+    font-size: clamp(38px, 5.6vw, 72px);
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+    margin: 0;
+}
+
+.breadcrumb {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--ink-3);
+    justify-content: center;
+}
+
+.breadcrumb a {
+    color: var(--ink-2);
+    text-decoration: none;
+}
+
+.breadcrumb a:hover {
+    color: var(--ink);
+}
+
+.heroIcon {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    display: grid;
+    place-items: center;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin: 0 auto;
+}
+
+.heroIcon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.heroIcon span {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--c, #2b5bff);
+}
+
+.lead {
+    font-size: clamp(17px, 1.5vw, 20px);
+    line-height: 1.5;
+    color: var(--ink-2);
+    max-width: 46ch;
+    margin: 0 auto;
+}
+
+.label {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+}
+
+.ctaGroup {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btnPrimary,
+.btnSecondary {
+    font-family: var(--sans);
+    font-size: 15.5px;
+    font-weight: 600;
+    padding: 14px 22px;
+    border-radius: 999px;
+    border: 0;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: transform 0.2s ease;
+}
+
+.btnPrimary {
+    background: var(--ink);
+    color: var(--ink-inv);
+}
+
+.btnPrimary:hover {
+    transform: translateY(-1px);
+}
+
+.btnSecondary {
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--line-2);
+}
+
+.btnSecondary:hover {
+    transform: translateY(-1px);
+}
+
+.ctaNote {
+    font-size: 14px;
+    color: var(--ink-3);
+}
+
+.actionsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+}
+
+.actionCard {
+    display: grid;
+    gap: 6px;
+    padding: 18px 20px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--surface);
+    align-content: start;
+}
+
+.actionCard b {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.actionCard p {
+    font-size: 14px;
+    color: var(--ink-2);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.triggersList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 999px;
+    padding: 8px 14px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.trigger i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ok);
+    flex: none;
+}
+
+.smallText {
+    color: var(--ink-3);
+    font-size: 15px;
+    margin: 8px 0 0;
+}
+
+.flowLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 0;
+}
+
+.flowStep {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 15px;
+    white-space: nowrap;
+}
+
+.flowStepHub {
+    background: var(--ink);
+    color: var(--ink-inv);
+    border-color: var(--ink);
+}
+
+.flowArrow {
+    width: 36px;
+    height: 2px;
+    background-image: linear-gradient(90deg, var(--line-2) 0 40%, transparent 40% 100%);
+    background-size: 8px 2px;
+    flex: none;
+}
+
+@media (max-width: 640px) {
+    .flowLine {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .flowArrow {
+        width: 2px;
+        height: 24px;
+        margin-left: 22px;
+        background-image: linear-gradient(180deg, var(--line-2) 0 40%, transparent 40% 100%);
+        background-size: 2px 8px;
+    }
+}
+
+.stepsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+}
+
+@media (max-width: 760px) {
+    .stepsGrid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.step {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding: 20px;
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+}
+
+.stepNum {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--accent);
+    letter-spacing: 0.12em;
+}
+
+.step b {
+    font-weight: 600;
+    font-size: 17px;
+}
+
+.step p {
+    font-size: 14.5px;
+    color: var(--ink-2);
+    line-height: 1.45;
+    margin: 0;
+}
+
+.step a {
+    color: var(--accent);
+    text-decoration: none;
+}
+
+.step a:hover {
+    text-decoration: underline;
+}
+
+.faqList {
+    display: grid;
+    max-width: 760px;
+    border-top: 1px solid var(--line);
+}
+
+.faq {
+    border-bottom: 1px solid var(--line);
+}
+
+.faq summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 0;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+}
+
+.faq summary::-webkit-details-marker {
+    display: none;
+}
+
+.faq summary i {
+    flex: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1px solid var(--line-2);
+    position: relative;
+    transition: transform 0.3s, border-color 0.3s;
+}
+
+.faq summary i::before,
+.faq summary i::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: var(--ink);
+    width: 10px;
+    height: 1.5px;
+    transform: translate(-50%, -50%);
+}
+
+.faq summary i::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+    transition: transform 0.3s;
+}
+
+.faq[open] summary i {
+    transform: rotate(45deg);
+    border-color: var(--accent);
+}
+
+.faq p {
+    margin: 0 0 22px;
+    color: var(--ink-2);
+    font-size: 15.5px;
+    line-height: 1.55;
+    max-width: 64ch;
+}
+
+.aboutHead {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.ctaBlock {
+    border-radius: 22px;
+    background: var(--ink);
+    color: var(--ink-inv);
+    padding: clamp(28px, 5vw, 56px);
+    display: grid;
+    gap: 18px;
+    max-width: 1080px;
+    margin: 0 auto clamp(28px, 5vw, 56px);
+}
+
+.ctaBlock h2 {
+    color: var(--ink-inv);
+    max-width: 18ch;
+    margin: 0;
+}
+
+.ctaBlock p {
+    color: color-mix(in srgb, var(--ink-inv) 72%, transparent);
+    max-width: 54ch;
+    margin: 0;
+}
+
+.ctaBlock .btnPrimary {
+    background: var(--ink-inv);
+    color: var(--ink);
+    justify-self: start;
+}
+
+.footer {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 28px clamp(20px, 5vw, 64px) 44px;
+    border-top: 1px solid var(--line);
+    font-size: 13.5px;
+    color: var(--ink-3);
+}
+
+.footer span b {
+    font-weight: 500;
+    color: var(--ink-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation: none !important;
+        transition: none !important;
+    }
+}

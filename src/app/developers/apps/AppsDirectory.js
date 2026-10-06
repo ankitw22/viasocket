@@ -49,7 +49,7 @@ function AppIcon({ app }) {
 function AppCard({ app }) {
     return (
         <Link
-            href={app.appslugname ? `/integrations/${app.appslugname}` : '/integrations'}
+            href={app.appslugname ? `/developers/app/${app.appslugname}` : '/developers/apps'}
             aria-label={app.name}
             className={`${TILE} group relative hover:z-10 focus-visible:z-10 no-underline text-dev-ink transition-all hover:-translate-y-0.5 hover:border-dev-line-2 hover:shadow-[0_1px_1px_rgba(11,13,16,.04),0_24px_60px_-30px_rgba(11,13,16,.25)]`}
         >
