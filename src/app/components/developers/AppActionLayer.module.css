@@ -42,65 +42,6 @@
     }
 }
 
-.header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
-    background: color-mix(in srgb, var(--bg) 84%, transparent);
-    backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--line);
-}
-
-.headerContent {
-    max-width: 1080px;
-    margin: 0 auto;
-    padding: 18px clamp(20px, 5vw, 64px);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-}
-
-.logo {
-    font-weight: 700;
-    font-size: 18px;
-    letter-spacing: -0.02em;
-    display: flex;
-    align-items: center;
-    gap: 9px;
-    text-decoration: none;
-    color: inherit;
-}
-
-.logoDot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--accent);
-}
-
-.nav {
-    display: flex;
-    align-items: center;
-    gap: 22px;
-}
-
-.nav a {
-    text-decoration: none;
-    color: var(--ink-2);
-    font-size: 14.5px;
-    transition: color 0.2s;
-}
-
-.nav a:hover {
-    color: var(--ink);
-}
-
-@media (max-width: 640px) {
-    .nav a:not(.btnPrimary) {
-        display: none;
-    }
-}
 
 .section {
     max-width: 1080px;

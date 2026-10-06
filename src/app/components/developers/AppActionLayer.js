@@ -3,6 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import Header from '../../developers/Header';
 import styles from './AppActionLayer.module.css';
 
 export default function AppActionLayer({ data, appname }) {
@@ -38,20 +39,7 @@ export default function AppActionLayer({ data, appname }) {
             `}</style>
 
             {/* Header */}
-            <header className={styles.header}>
-                <div className={styles.headerContent}>
-                    <Link href="/developers/apps" className={styles.logo}>
-                        <span className={styles.logoDot}></span>
-                        viaSocket
-                    </Link>
-                    <nav className={styles.nav}>
-                        <a href="/action-layer/">Apps</a>
-                        <a href="/auth.html">Managed auth</a>
-                        <a href="/pricing.html">Pricing</a>
-                        <a href="/#start">Docs</a>
-                    </nav>
-                </div>
-            </header>
+            <Header />
 
             {/* Hero Section */}
             <section className={styles.hero}>
