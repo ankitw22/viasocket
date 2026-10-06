@@ -16,6 +16,7 @@ export default function AppActionLayer({ data, appname }) {
         metadata,
         faqData = [],
         useCasesNewData = [],
+        useCasesCardsData = [],
     } = data;
 
     if (!appOneDetails) {
@@ -26,8 +27,20 @@ export default function AppActionLayer({ data, appname }) {
     const heroIcon = app?.iconurl;
     const brandColor = app?.brandcolor || '#2B5BFF';
 
-    // Extract actions from use cases or useCasesNewData
-    const actions = useCasesNewData?.slice(0, 6) || [];
+    // Extract actions from use cases - prefer useCasesNewData, fallback to useCasesCardsData
+    const actions = (useCasesNewData?.length > 0 ? useCasesNewData : useCasesCardsData)?.slice(0, 6) || [];
+
+    // Fallback actions if no data available
+    const defaultActions = [
+        { name: `Create in ${app.name}`, description: `Add new records and items to ${app.name} programmatically` },
+        { name: `Update ${app.name} records`, description: `Modify existing entries and properties in ${app.name}` },
+        { name: `Search and find in ${app.name}`, description: `Query and retrieve data from ${app.name}` },
+        { name: `Delete from ${app.name}`, description: `Remove records and entries from ${app.name}` },
+        { name: `List and fetch ${app.name} data`, description: `Get all or filtered ${app.name} data` },
+        { name: `Export and sync ${app.name}`, description: `Export ${app.name} data to other systems` },
+    ];
+
+    const displayActions = actions?.length > 0 ? actions : defaultActions;
     const triggers = useCasesNewData?.filter(u => u.triggerType)?.slice(0, 3) || [];
 
     return (
@@ -77,7 +90,7 @@ export default function AppActionLayer({ data, appname }) {
                 <div className={styles.label}>Actions</div>
 
                 <div className={styles.actionsGrid}>
-                    {actions.map((action, idx) => (
+                    {displayActions.map((action, idx) => (
                         <div key={idx} className={styles.actionCard}>
                             <b>{action.name || `Action ${idx + 1}`}</b>
                             <p>{action.description || 'Perform this action in ' + app.name}</p>
